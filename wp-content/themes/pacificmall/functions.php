@@ -29,9 +29,13 @@ function get_main_title()
 }
 
 //子ページを取得する関数
-function get_child_pages($number = -1)
+function get_child_pages($number = -1, $specified_id = null)
 {
-  $parent_id = get_the_ID();
+  if (isset($specified_id)) :
+    $parent_id = $specified_id;
+  else :
+    $parent_id = get_the_ID();
+  endif;
   $args = array(
     'posts_per_page' => $number,
     'post_type' => 'page',
