@@ -101,7 +101,7 @@
       );
       $news_posts = new WP_Query($args);
       if ($news_posts->have_posts()) :
-        while ($news_posts->have_posts()) : $news_posts->the_posts();
+        while ($news_posts->have_posts()) : $news_posts->the_post();
       ?>
           <li class="news-item">
             <a class="detail-link" href="<?php the_permalink(); ?>">

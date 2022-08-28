@@ -1,0 +1,1 @@
+/Users/a.o.i/Desktop/Web制作/wpbook/wp-content/plugins/query-monitor/wp-content/db.php
