@@ -75,4 +75,9 @@
                 </div>
               </div>
               <div class="page-container">
+                <?php 
+                if(function_exists('bread_crumb')):
+                  bread_crumb();
+                endif;
+                ?>
               <?php endif; ?>
