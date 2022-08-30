@@ -3,7 +3,7 @@
   <div class="page-main" id="pg-search">
     <form class="search-form" role="search" method="get" action="<?php echo esc_url(home_url()); ?>">
       <div class="search-box">
-        <input type="text" name="" class="search-input" placeholder="キーワードを入力してください" value="<?php the_search_query(); ?>" />
+        <input type="text" name="s" class="search-input" placeholder="キーワードを入力してください" value="<?php the_search_query(); ?>" />
         <button type="submit" class="button button-submit">検索</button>
       </div>
     </form>
@@ -28,10 +28,9 @@
                 if($image):
                   echo $image;
                 else:
-                  echo '<img src="'. get_template_directory_uri(). '/assets/images/imag-noImage.png" />';
+                  echo '<img src="'. get_template_directory_uri(). '/assets/images/img-noImage.png" />';
                 endif;
                 ?>
-                <img src="./assets/images/img-noImage.png" alt="" />
               </div>
               <dl>
                 <dt><?php the_title(); ?></dt>
@@ -42,9 +41,9 @@
         </li>
         <?php endwhile; ?>
       </ul>
-      <?php 
       <div class="pager">
         <ul class="pagerList">
+        <?php 
         if(function_exists('page_navi')):
           page_navi();
         endif;
