@@ -28,7 +28,7 @@ class Post extends Model {
 	 *
 	 * @var array
 	 */
-	protected $jsonFields = [ 'images', 'videos' ]; // TODO: Update this.
+	protected $jsonFields = [ 'images', 'videos', 'options' ]; // TODO: Update this.
 
 	/**
 	 * Fields that should be hidden when serialized.
@@ -91,7 +91,7 @@ class Post extends Model {
 			$post = self::runDynamicMigrations( $post );
 		}
 
-		return $post;
+		return apply_filters( 'aioseo_get_post', $post );
 	}
 
 	/**
@@ -104,16 +104,24 @@ class Post extends Model {
 	 * @return Post         The modified Post object.
 	 */
 	private static function setDynamicDefaults( $post, $postId ) {
-		if (
-			'page' === get_post_type( $postId ) && // This check cannot be deleted and is required to prevent errors after WordPress cleans up the attachment it creates when a plugin is updated.
-			(
-				aioseo()->helpers->isWooCommerceCheckoutPage( $postId ) ||
+		if ( 'page' === get_post_type( $postId ) ) { // This check cannot be deleted and is required to prevent errors after WordPress cleans up the attachment it creates when a plugin is updated.
+			$isWooCommerceCheckoutPage = aioseo()->helpers->isWooCommerceCheckoutPage( $postId );
+			if (
+				$isWooCommerceCheckoutPage ||
 				aioseo()->helpers->isWooCommerceCartPage( $postId ) ||
 				aioseo()->helpers->isWooCommerceAccountPage( $postId )
-			)
-		) {
-			$post->robots_default = false;
-			$post->robots_noindex = true;
+			) {
+				$post->robots_default = false;
+				$post->robots_noindex = true;
+			}
+
+			if ( $isWooCommerceCheckoutPage ) {
+				$schemaTypeOptions                       = json_decode( self::getDefaultSchemaOptions() );
+				$schemaTypeOptions->webPage->webPageType = 'CheckoutPage';
+
+				$post->schema_type = 'WebPage';
+				$post->schema_type_options = wp_json_encode( $schemaTypeOptions );
+			}
 		}
 
 		if ( aioseo()->helpers->isStaticHomePage( $postId ) ) {
@@ -134,7 +142,7 @@ class Post extends Model {
 	 * @return Post             The modified post object.
 	 */
 	private static function migrateRemovedQaSchema( $aioseoPost ) {
-		if ( 'webpage' !== strtolower( $aioseoPost->schema_type ) ) {
+		if ( ! $aioseoPost->schema_type || 'webpage' !== strtolower( $aioseoPost->schema_type ) ) {
 			return $aioseoPost;
 		}
 
@@ -195,7 +203,9 @@ class Post extends Model {
 
 		$thePost = self::getPost( $postId );
 		// Before setting the data, we check if the title/description are the same as the defaults and clear them if so.
-		$data    = self::checkForDefaultFormat( $postId, $thePost, $data );
+		$data = self::checkForDefaultFormat( $postId, $thePost, $data );
+
+		$thePost = apply_filters( 'aioseo_save_post', $thePost );
 		$thePost = self::sanitizeAndSetDefaults( $postId, $thePost, $data );
 
 		// Update traditional post meta so that it can be used by multilingual plugins.
@@ -222,17 +232,18 @@ class Post extends Model {
 	 * @return array          The data.
 	 */
 	private static function checkForDefaultFormat( $postId, $thePost, $data ) {
-		if ( $thePost->exists() ) {
-			$post            = aioseo()->helpers->getPost( $postId );
-			$metaTitle       = aioseo()->meta->title->getPostTypeTitle( $post->post_type );
-			$metaDescription = aioseo()->meta->description->getPostTypeDescription( $post->post_type );
-			if ( empty( $thePost->title ) && ! empty( $data['title'] ) && trim( $data['title'] ) === trim( $metaTitle ) ) {
-				$data['title'] = null;
-			}
+		$data['title']       = trim( $data['title'] );
+		$data['description'] = trim( $data['description'] );
 
-			if ( empty( $thePost->description ) && ! empty( $data['description'] ) && trim( $data['description'] ) === trim( $metaDescription ) ) {
-				$data['description'] = null;
-			}
+		$post                     = aioseo()->helpers->getPost( $postId );
+		$defaultTitleFormat       = trim( aioseo()->meta->title->getPostTypeTitle( $post->post_type ) );
+		$defaultDescriptionFormat = trim( aioseo()->meta->description->getPostTypeDescription( $post->post_type ) );
+		if ( ! empty( $data['title'] ) && $data['title'] === $defaultTitleFormat ) {
+			$data['title'] = null;
+		}
+
+		if ( ! empty( $data['description'] ) && $data['description'] === $defaultDescriptionFormat ) {
+			$data['description'] = null;
 		}
 
 		return $data;
@@ -300,10 +311,9 @@ class Post extends Model {
 		// Schema
 		$thePost->schema_type                 = ! empty( $data['schema_type'] ) ? sanitize_text_field( $data['schema_type'] ) : 'default';
 		$thePost->schema_type_options         = ! empty( $data['schema_type_options'] )
-			? parent::getDefaultSchemaOptions( wp_json_encode( $data['schema_type_options'] ) )
-			: parent::getDefaultSchemaOptions();
+			? self::getDefaultSchemaOptions( wp_json_encode( $data['schema_type_options'] ) )
+			: self::getDefaultSchemaOptions();
 		// Miscellaneous
-		$thePost->tabs                        = ! empty( $data['tabs'] ) ? wp_json_encode( $data['tabs'] ) : parent::getDefaultTabsOptions();
 		$thePost->local_seo                   = ! empty( $data['local_seo'] ) ? wp_json_encode( $data['local_seo'] ) : null;
 		$thePost->limit_modified_date         = isset( $data['limit_modified_date'] ) ? rest_sanitize_boolean( $data['limit_modified_date'] ) : 0;
 		$thePost->updated                     = gmdate( 'Y-m-d H:i:s' );
@@ -447,14 +457,67 @@ class Post extends Model {
 	}
 
 	/**
+	 * Returns a JSON object with default schema options.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @param  string $existingOptions The existing options in JSON.
+	 * @return string                  The existing options with defaults added in JSON.
+	 */
+	public static function getDefaultSchemaOptions( $existingOptions = '' ) {
+		// If the root level value for a graph needs to be an object, we need to set at least one property inside of it so that PHP doesn't convert it to an empty array.
+
+		$defaults = [
+			'article'     => [
+				'articleType' => 'BlogPosting'
+			],
+			'course'      => [
+				'name'        => '',
+				'description' => '',
+				'provider'    => ''
+			],
+			'faq'         => [
+				'pages' => []
+			],
+			'product'     => [
+				'reviews' => []
+			],
+			'recipe'      => [
+				'ingredients'  => [],
+				'instructions' => [],
+				'keywords'     => []
+			],
+			'software'    => [
+				'reviews'          => [],
+				'operatingSystems' => []
+			],
+			'webPage'     => [
+				'webPageType' => 'WebPage'
+			],
+			'blockGraphs' => []
+		];
+
+		if ( empty( $existingOptions ) ) {
+			return wp_json_encode( $defaults );
+		}
+
+		$existingOptions = json_decode( $existingOptions, true );
+		$existingOptions = array_replace_recursive( $defaults, $existingOptions );
+
+		return wp_json_encode( $existingOptions );
+	}
+
+	/**
 	 * Returns the defaults for the keyphrases column.
 	 *
 	 * @since 4.1.7
 	 *
-	 * @return array The defaults.
+	 * @param  string $keyphrases The database keyphrases.
+	 * @return array              The defaults.
 	 */
-	public static function getKeyphrasesDefaults() {
-		$defaults = [
+	public static function getKeyphrasesDefaults( $keyphrases = '' ) {
+		$keyphrases = json_decode( $keyphrases );
+		$defaults   = [
 			'focus'      => [
 				'keyphrase' => '',
 				'score'     => 0,
@@ -469,6 +532,41 @@ class Post extends Model {
 			'additional' => []
 		];
 
-		return json_decode( wp_json_encode( $defaults ) );
+		if ( empty( $keyphrases ) ) {
+			return json_decode( wp_json_encode( $defaults ) );
+		}
+
+		if ( empty( $keyphrases->focus ) ) {
+			$keyphrases->focus = $defaults['focus'];
+		}
+
+		if ( empty( $keyphrases->additional ) ) {
+			$keyphrases->additional = $defaults['additional'];
+		}
+
+		return $keyphrases;
+	}
+
+	/**
+	 * Returns the defaults for the keyphrases column.
+	 *
+	 * @since 4.2.2
+	 *
+	 * @param  string $options The database keyphrases.
+	 * @return array           The defaults.
+	 */
+	public static function getOptionsDefaults( $options = '' ) {
+		$defaults = [
+			'linkFormat' => [
+				'internalLinkCount'      => 0,
+				'linkAssistantDismissed' => false
+			]
+		];
+
+		if ( empty( $options ) ) {
+			return json_decode( wp_json_encode( $defaults ) );
+		}
+
+		return $options;
 	}
 }

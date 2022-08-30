@@ -266,15 +266,16 @@ namespace AIOSEO\Plugin {
 				return;
 			}
 
-			$dotenv = \Dotenv\Dotenv::create( AIOSEO_DIR, '/build/.env' );
+			$dotenv = \Dotenv\Dotenv::createUnsafeImmutable( AIOSEO_DIR, '/build/.env' );
 			$dotenv->load();
 
 			$version = strtolower( getenv( 'VITE_VERSION' ) );
 			if ( ! empty( $version ) ) {
 				$this->isDev = true;
 
-				// Fix SSL certificate invalid in our local environments.
-				add_filter( 'https_ssl_verify', '__return_false' );
+				if ( file_exists( AIOSEO_DIR . '/build/filters.php' ) ) {
+					require_once AIOSEO_DIR . '/build/filters.php';
+				}
 			}
 
 			if ( $proDir && 'pro' === $version ) {
@@ -318,6 +319,7 @@ namespace AIOSEO\Plugin {
 			$this->backwardsCompatibility();
 
 			// Internal Options.
+			$this->helpers         = $this->pro ? new Pro\Utils\Helpers() : new Lite\Utils\Helpers();
 			$this->internalOptions = $this->pro ? new Pro\Options\InternalOptions() : new Lite\Options\InternalOptions();
 
 			// Run pre-updates.
@@ -377,9 +379,9 @@ namespace AIOSEO\Plugin {
 				$translations->init();
 			}
 
-			$this->helpers            = $this->pro ? new Pro\Utils\Helpers() : new Common\Utils\Helpers();
 			$this->addons             = $this->pro ? new Pro\Utils\Addons() : new Common\Utils\Addons();
 			$this->tags               = $this->pro ? new Pro\Utils\Tags() : new Common\Utils\Tags();
+			$this->blocks             = new Common\Utils\Blocks();
 			$this->badBotBlocker      = new Common\Tools\BadBotBlocker();
 			$this->breadcrumbs        = $this->pro ? new Pro\Breadcrumbs\Breadcrumbs() : new Common\Breadcrumbs\Breadcrumbs();
 			$this->dynamicBackup      = $this->pro ? new Pro\Options\DynamicBackup() : new Common\Options\DynamicBackup();
@@ -398,6 +400,7 @@ namespace AIOSEO\Plugin {
 			$this->htaccess           = new Common\Tools\Htaccess();
 			$this->term               = $this->pro ? new Pro\Admin\Term() : null;
 			$this->notices            = $this->pro ? new Pro\Admin\Notices\Notices() : new Lite\Admin\Notices\Notices();
+			$this->wpNotices          = new Common\Admin\Notices\WpNotices();
 			$this->admin              = $this->pro ? new Pro\Admin\Admin() : new Lite\Admin\Admin();
 			$this->activate           = $this->pro ? new Pro\Main\Activate() : new Common\Main\Activate();
 			$this->conflictingPlugins = $this->pro ? new Pro\Admin\ConflictingPlugins() : new Common\Admin\ConflictingPlugins();
@@ -408,7 +411,8 @@ namespace AIOSEO\Plugin {
 			$this->templates          = new Common\Utils\Templates();
 			$this->categoryBase       = $this->pro ? new Pro\Main\CategoryBase() : null;
 			$this->postSettings       = $this->pro ? new Pro\Admin\PostSettings() : new Lite\Admin\PostSettings();
-			$this->standalone         = new Common\Standalone\Standalone;
+			$this->standalone         = new Common\Standalone\Standalone();
+			$this->slugMonitor        = new Common\Admin\SlugMonitor();
 
 			if ( ! wp_doing_ajax() && ! wp_doing_cron() ) {
 				$this->rss       = new Common\Rss();
@@ -418,17 +422,33 @@ namespace AIOSEO\Plugin {
 				$this->filters   = $this->pro ? new Pro\Main\Filters() : new Lite\Main\Filters();
 				$this->dashboard = $this->pro ? new Pro\Admin\Dashboard() : new Common\Admin\Dashboard();
 				$this->api       = $this->pro ? new Pro\Api\Api() : new Lite\Api\Api();
-				$this->filter    = new Common\Utils\Filter();
 				$this->help      = new Common\Help\Help();
 			}
 
 			$this->backwardsCompatibilityLoad();
 
-			if ( wp_doing_ajax() || wp_doing_cron() ) {
+			if ( wp_doing_ajax() ) {
+				add_action( 'init', [ $this, 'loadAjaxInit' ], 999 );
+
+				return;
+			}
+
+			if ( wp_doing_cron() ) {
 				return;
 			}
 
 			add_action( 'init', [ $this, 'loadInit' ], 999 );
+		}
+
+		/**
+		 * Things that need to load after init, on AJAX requests.
+		 *
+		 * @since 4.2.4
+		 *
+		 * @return void
+		 */
+		public function loadAjaxInit() {
+			$this->addons->registerUpdateCheck();
 		}
 
 		/**

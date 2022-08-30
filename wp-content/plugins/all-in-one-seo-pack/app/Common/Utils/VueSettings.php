@@ -85,6 +85,7 @@ class VueSettings {
 			'searchSchema'                 => true,
 			'searchMediaAttachments'       => true,
 			'searchAdvanced'               => true,
+			'searchAdvancedCrawlCleanup'   => true,
 			'authorArchives'               => true,
 			'dateArchives'                 => true,
 			'searchArchives'               => true,
@@ -118,7 +119,8 @@ class VueSettings {
 			'locationsShowOnWebsite'        => 'widget',
 			'breadcrumbsShowOnWebsite'      => 'shortcode',
 			'breadcrumbsShowMoreSeparators' => false,
-			'searchShowMoreSeparators'      => false
+			'searchShowMoreSeparators'      => false,
+			'overviewPostType'              => 'post',
 		],
 		'internalTabs'    => [
 			'authorArchives'    => 'title-description',

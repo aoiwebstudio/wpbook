@@ -412,4 +412,120 @@ trait ThirdParty {
 
 		return $accessToken;
 	}
+
+	/**
+	* Returns the homepage URL for a language code.
+	*
+	* @since 4.2.1
+	*
+	* @param  string|int $identifier The language code or the post id to return the url.
+	* @return string                 The home URL.
+	*/
+	public function wpmlHomeUrl( $identifier ) {
+		foreach ( $this->wpmlHomePages() as $langCode => $wpmlHomePage ) {
+			if (
+				( is_string( $identifier ) && $langCode === $identifier ) ||
+				( is_numeric( $identifier ) && $wpmlHomePage['id'] === $identifier )
+			) {
+				return $wpmlHomePage['url'];
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Returns the homepage IDs.
+	 *
+	 * @since 4.2.1
+	 *
+	 * @return array An array of home page ids.
+	 */
+	public function wpmlHomePages() {
+		global $sitepress;
+		static $homePages = [];
+
+		if ( ! $this->isWpmlActive() || empty( $sitepress ) || ! method_exists( $sitepress, 'language_url' ) ) {
+			return $homePages;
+		}
+
+		if ( empty( $homePages ) ) {
+			$languages  = apply_filters( 'wpml_active_languages', [] );
+			$homePageId = (int) get_option( 'page_on_front' );
+			foreach ( $languages as $language ) {
+				$homePages[ $language['code'] ] = [
+					'id'  => apply_filters( 'wpml_object_id', $homePageId, 'page', false, $language['code'] ),
+					'url' => $sitepress->language_url( $language['code'] )
+				];
+			}
+		}
+
+		return $homePages;
+	}
+
+	/**
+	 * Returns if the post id os a WPML home page.
+	 *
+	 * @since 4.2.1
+	 *
+	 * @param  int  $postId The post ID.
+	 * @return bool         Is the post id a home page.
+	 */
+	public function wpmlIsHomePage( $postId ) {
+		foreach ( $this->wpmlHomePages() as $wpmlHomePage ) {
+			if ( $wpmlHomePage['id'] === $postId ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether the WooCommerce Follow Up Emails plugin is active.
+	 *
+	 * @since 4.2.2
+	 *
+	 * @return bool Whether the plugin is active.
+	 */
+	public function isWooCommerceFollowupEmailsActive() {
+		$isActive = defined( 'FUE_VERSION' ) || is_plugin_active( 'woocommerce-follow-up-emails/woocommerce-follow-up-emails.php' );
+
+		return $isActive;
+	}
+
+	/**
+	 * Checks if the current page is an AMP page.
+	 *
+	 * @since 4.2.3
+	 *
+	 * @param  string $pluginName The name of the AMP plugin to check for (optional).
+	 * @return bool               Whether the current page is an AMP page.
+	 */
+	public function isAmpPage( $pluginName = '' ) {
+		// Official AMP plugin.
+		if ( 'amp' === $pluginName && defined( 'AMP__VERSION' ) ) {
+			$options = get_option( 'amp-options' );
+			if ( ! empty( $options['theme_support'] ) && 'standard' === strtolower( $options['theme_support'] ) ) {
+				return true;
+			}
+		}
+
+		return $this->isAmpPageHelper();
+	}
+
+	/**
+	 * Checks if the current page is an AMP page.
+	 * Helper function for isAmpPage(). Contains common logic that applies to both AMP and AMP for WP.
+	 *
+	 * @since 4.2.4
+	 *
+	 * @return bool Whether the current page is an AMP page.
+	 */
+	private function isAmpPageHelper() {
+		global $wp;
+
+		// This URL param is set when using plain permalinks.
+		return isset( $_GET['amp'] ) || preg_match( '/amp$/', untrailingslashit( $wp->request ) );
+	}
 }

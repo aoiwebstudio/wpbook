@@ -18,6 +18,7 @@ class Standalone {
 		$this->detailsColumn     = aioseo()->pro ? new ProStandalone\DetailsColumn : new DetailsColumn;
 		$this->headlineAnalyzer  = new HeadlineAnalyzer;
 		$this->flyoutMenu        = new FlyoutMenu;
+		$this->userProfileTab    = new UserProfileTab;
 		$this->setupWizard       = new SetupWizard;
 
 		new PublishPanel;
@@ -28,6 +29,11 @@ class Standalone {
 			'elementor' => new PageBuilders\Elementor,
 			'divi'      => new PageBuilders\Divi,
 			'seedprod'  => new PageBuilders\SeedProd
+		];
+
+		$this->standaloneBlocks = [
+			'tocBlock' => new Blocks\TableOfContents(),
+			'faqBlock' => new Blocks\FaqPage()
 		];
 	}
 }

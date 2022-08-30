@@ -497,7 +497,8 @@ trait Options {
 
 		// Refactor options.
 		$resetValues = $this->resetValues( $defaults, $this->defaultsMerged, $keys, $include, $exclude );
-		$defaults    = array_replace_recursive( $defaults, $resetValues );
+		// We need to call our helper method instead of the built-in array_replace_recursive() function here because we want values to be replaced with empty arrays.
+		$defaults = aioseo()->helpers->arrayReplaceRecursive( $defaults, $resetValues );
 
 		$originalDefaults = json_decode( wp_json_encode( $cachedOptions[ $originalGroupKey ] ), true );
 		$pointer          = &$originalDefaults; // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
@@ -1050,11 +1051,16 @@ trait Options {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return Options The cloned Options object.
+	 * @param  bool    $reInitialize Whether or not to reinitialize on the clone.
+	 * @return Options               The cloned Options object.
 	 */
-	public function noConflict() {
+	public function noConflict( $reInitialize = false ) {
 		$class          = clone $this;
 		$class->isClone = true;
+
+		if ( $reInitialize ) {
+			$class->init();
+		}
 
 		return $class;
 	}
