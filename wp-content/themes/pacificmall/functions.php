@@ -27,6 +27,8 @@ function get_main_title()
     return single_cat_title();
   elseif (is_search()) :
     return 'サイト内検索結果';
+  elseif (is_404()) :
+    return 'ページが見つかりません';
   endif;
 }
 
@@ -78,7 +80,7 @@ function get_main_image()
     return get_the_post_thumbnail($post->ID, 'detail');
   elseif (is_category('news') || is_singular('post')) :
     return '<img src="' . get_template_directory_uri() . '/assets/images/bg-page-news.jpg" />';
-  elseif (is_search()) :
+  elseif (is_search() || is_404()) :
     return '<img src="' . get_template_directory_uri() . '/assets/images/bg-page-search.jpg" />';
   else :
     return '<img src="' . get_template_directory_uri() . '/assets/images/bg-page-dummy.jpg" />';
@@ -101,4 +103,27 @@ function get_specific_posts($post_type, $taxonomy = null, $term = null, $number 
   );
   $specific_posts = new WP_Query($args);
   return $specific_posts;
+}
+
+
+//抜粋文のデフォルト文字数を定義する
+function cms_excerpt_more() {
+  return '...';
+}
+add_filter('excerpt_more', 'cms_excerpt_more');
+
+function cms_excerpt_length() {
+  return 80;
+}
+add_filter('excerpt_mblength', 'cms_excerpt_length');
+
+
+//抜粋機能の有効化
+add_post_type_support('page', 'excerpt');
+
+//各抜粋文を適度な長さに調整する
+function get_flexible_excerpt($number) {
+  $value = get_the_excerpt();
+  $value = wp_trim_words($value, $number, '...');
+  return $value;
 }
