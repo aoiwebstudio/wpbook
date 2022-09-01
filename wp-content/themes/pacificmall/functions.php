@@ -118,7 +118,7 @@ function cms_excerpt_length() {
 add_filter('excerpt_mblength', 'cms_excerpt_length');
 
 
-//抜粋機能の有効化
+//抜粋機能を固定ページに使えるよう設定
 add_post_type_support('page', 'excerpt');
 
 //各抜粋文を適度な長さに調整する
@@ -127,3 +127,9 @@ function get_flexible_excerpt($number) {
   $value = wp_trim_words($value, $number, '...');
   return $value;
 }
+
+//get_the_excerpt()で取得する文字列に改行タグを挿入
+function apply_excerpt_br($value) {
+  return nl2br($value);
+}
+add_filter('get_the_excerpt', 'apply_excerpt_br');
