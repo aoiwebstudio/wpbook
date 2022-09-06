@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Plugins - Contact Form 7 - Stable (latest release) package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2022-07-19 09:01:17+0000\n"
+"PO-Revision-Date: 2022-09-01 09:06:58+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -11,7 +11,11 @@ msgstr ""
 "Language: ja_JP\n"
 "Project-Id-Version: Plugins - Contact Form 7 - Stable (latest release)\n"
 
-#: includes/config-validator.php:581
+#: includes/config-validator.php:634
+msgid "Uploadable file size exceeds PHP’s maximum acceptable size."
+msgstr "アップロード可能なファイルサイズが PHP の受信可能上限値を超過している。"
+
+#: includes/config-validator.php:583
 msgid "Colons are used in form-tag names."
 msgstr "フォームタグの名前にコロンが使われている。"
 
@@ -175,7 +179,7 @@ msgstr "%1$s %2$s"
 msgid "Unique identifier for the contact form."
 msgstr "コンタクトフォームの一意識別子。"
 
-#: includes/config-validator.php:553
+#: includes/config-validator.php:555
 msgid "Dots are used in form-tag names."
 msgstr "フォームタグの名前にドット記号が使われている。"
 
@@ -414,11 +418,11 @@ msgstr "その他の機能"
 msgid "Error"
 msgstr "エラー"
 
-#: includes/config-validator.php:772
+#: includes/config-validator.php:825
 msgid "The total size of attachment files is too large."
 msgstr "添付ファイルの合計容量が大きすぎる。"
 
-#: includes/config-validator.php:526
+#: includes/config-validator.php:528
 msgid "Unavailable HTML elements are used in the form template."
 msgstr "フォームテンプレートで使用できない HTML 要素が使われている。"
 
@@ -544,7 +548,7 @@ msgstr "Constant Contact"
 msgid "Email marketing"
 msgstr "メールマーケティング"
 
-#: includes/config-validator.php:858
+#: includes/config-validator.php:911
 msgid "It is not allowed to use files outside the wp-content directory."
 msgstr "wp-content ディレクトリの外部にあるファイルは指定できません。"
 
@@ -666,7 +670,7 @@ msgstr "このプラグインの開発とサポートには多大な労力が費
 msgid "This contact form is available only for logged in users."
 msgstr "このコンタクトフォームはログインしたユーザーにのみ利用可能です。"
 
-#: includes/config-validator.php:191
+#: includes/config-validator.php:192
 msgid "Deprecated settings are used."
 msgstr "廃止予定の設定が使われている。"
 
@@ -701,36 +705,36 @@ msgstr "既存のコンタクトフォームは作成できません。"
 msgid "You are not allowed to access contact forms."
 msgstr "コンタクトフォームにアクセスする権限がありません。"
 
-#: includes/config-validator.php:834
+#: includes/config-validator.php:887
 msgid "Attachment file does not exist at %path%."
 msgstr "添付するファイルが %path% に存在しません。"
 
-#: includes/config-validator.php:691
+#: includes/config-validator.php:744
 msgid "Invalid mailbox syntax is used in the %name% field."
 msgstr "%name% 項目に不正なメールボックス構文が見られます。"
 
 #. translators: %names%: a list of form control names
-#: includes/config-validator.php:503
+#: includes/config-validator.php:505
 msgid "Unavailable names (%names%) are used for form controls."
 msgstr "フォームコントロールに使用できない名前 (%names%) が使われています。"
 
-#: includes/config-validator.php:189
+#: includes/config-validator.php:190
 msgid "There are invalid mail header fields."
 msgstr "不正なメールヘッダー項目があります。"
 
-#: includes/config-validator.php:185
+#: includes/config-validator.php:186
 msgid "HTML tags are used in a message."
 msgstr "メッセージに HTML タグが使われています。"
 
-#: includes/config-validator.php:183
+#: includes/config-validator.php:184
 msgid "Sender email address does not belong to the site domain."
 msgstr "サイトのドメインに属していないメールアドレスが送信元に設定されています。"
 
-#: includes/config-validator.php:181
+#: includes/config-validator.php:182
 msgid "Invalid mailbox syntax is used."
 msgstr "不正なメールボックス構文が使用されています。"
 
-#: includes/config-validator.php:179
+#: includes/config-validator.php:180
 msgid "There is a possible empty field."
 msgstr "項目が空になる可能性があります。"
 
@@ -801,7 +805,7 @@ msgstr "スパマーはあらゆるものを標的にします。あなたのコ
 msgid "Getting spammed? You have protection."
 msgstr "スパムが来ました? 対策ならありますよ。"
 
-#: includes/config-validator.php:187
+#: includes/config-validator.php:188
 msgid "Multiple form controls are in a single label element."
 msgstr "複数のフォームコントロールが単一の label 要素内に置かれています。"
 
@@ -860,7 +864,7 @@ msgstr "間違った設定があるとメール配送の失敗やその他のト
 msgid "Validate Contact Form 7 Configuration"
 msgstr "Contact Form 7 の設定を検証する"
 
-#: includes/config-validator.php:36
+#: includes/config-validator.php:37
 msgid "https://contactform7.com/configuration-errors/"
 msgstr "https://contactform7.com/configuration-errors/"
 

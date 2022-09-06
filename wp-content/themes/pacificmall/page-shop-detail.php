@@ -25,7 +25,7 @@ get_header();
         <ul class="shopList">
           <li class="shopList-item">
             <div class="shop-image">
-              <img src="<?php echo get_template_directory_uri(); ?> /assets/images/otemachi_cinema.png" alt="" />
+              <img src="<?php echo get_template_directory_uri(); ?>/assets/images/otemachi_cinema.png" alt="" />
             </div>
             <div class="shop-body">
               <p class="shop-title">パシフィックシネマ 大手町 </p>
@@ -49,7 +49,7 @@ get_header();
           </li>
           <li class="shopList-item">
             <div class="shop-image">
-              <img src="<?php echo get_template_directory_uri(); ?> /assets/images/otemachi_shikou.png" alt="" />
+              <img src="<?php echo get_template_directory_uri(); ?>/assets/images/otemachi_shikou.png" alt="" />
             </div>
             <div class="shop-body">
               <p class="shop-title">和牛専門 「大手町 至高（しこう）」 </p>
