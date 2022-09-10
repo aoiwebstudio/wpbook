@@ -24,7 +24,7 @@
         <?php
         wp_nav_menu(
           array(
-            'theme_location' => 'place_footer-aoi',
+            'theme_location' => 'place_footer',
             'container' => 'false',
           )
         );

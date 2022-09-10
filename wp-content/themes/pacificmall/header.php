@@ -31,7 +31,7 @@
             <?php
             wp_nav_menu(
               array(
-                'theme_location' => 'place_global-aoi',
+                'theme_location' => 'place_global',
                 'container' => 'false',
               )
             );
