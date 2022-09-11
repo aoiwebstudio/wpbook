@@ -3624,14 +3624,17 @@ iframe {
 	margin-right: 0px;
 }
 
+/* .sns-navi .twitter {
+    background: url('../images/bg-page-news.jpg') no-repeat;
+} */
 .sns-navi .twitter {
-    background: url('###') no-repeat;
+    background-color: white;
 }
 .sns-navi .facebook {
-    background: url('###') no-repeat;
+    background: url('../images/facebook.png') no-repeat;
 }
 .sns-navi .instagram {
-    background: url('###') no-repeat;
+    background: url('../images/instagram.png') no-repeat;
 }
 
 .category_image {
